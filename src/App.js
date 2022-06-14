@@ -1,23 +1,42 @@
-import logo from './logo.svg';
 import './App.css';
+import React , {useState, useEffect} from 'react'
+import { getData } from './api/getData';
+import UserCard from './components/UserCard';
+import Loader from './components/Loader';
+import {useSelector, useDispatch} from 'react-redux';
+import {metaDataLoad} from './reducer/userDataActions'
 
 function App() {
+  const userData = useSelector(state => state)
+  const [selectedId, setSelectedId] = useState(0);
+  const dispatch = useDispatch();
+  
+  const fetchData = async () => {
+    try {
+      let res = await getData();
+      dispatch(metaDataLoad(res.data))
+    } catch(err) {
+      console.log(err)
+    }
+  }
+
+  useEffect(()=> {
+    fetchData();  
+  },[])
+
+  if(!userData)
+    return <Loader/>
+
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+      <UserCard id={selectedId}/>
+      
+      <div className='btn-container'>
+        {Array.from({length:userData.total},(_,id)=> 
+          <button className='btn' style={{backgroundColor:selectedId===id+1?'gray':'#8b509d'}} onClick={()=>setSelectedId(id+1)}>{id+1}</button>
+        )}
+      </div>
+     
     </div>
   );
 }
